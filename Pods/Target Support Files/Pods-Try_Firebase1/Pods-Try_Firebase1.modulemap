@@ -1,0 +1,6 @@
+framework module Pods_Try_Firebase1 {
+  umbrella header "Pods-Try_Firebase1-umbrella.h"
+
+  export *
+  module * { export * }
+}
