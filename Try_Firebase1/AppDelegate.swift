@@ -22,6 +22,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
 
+    // METHOD A
+    /*
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
@@ -31,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         let enableAnalytics = UserDefaults.standard.bool(forKey: Constants.AnalyticsEnabled)
         AnalyticsConfiguration.shared().setAnalyticsCollectionEnabled(enableAnalytics)
-  
+
         // Initialize Crashlytics
         if UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
         {
@@ -54,7 +56,116 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         return true
     }
+    */
     
+    // METHOD B [need to add CrashlyticsDelegation protocol to AppDelegate]
+    /*
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        // Override point for customization after application launch.
+        
+        setDefaultsFromSettingsBundle()
+        
+        // Initialize Firebase Analytics
+        FirebaseApp.configure()
+        let enableAnalytics = UserDefaults.standard.bool(forKey: Constants.AnalyticsEnabled)
+        AnalyticsConfiguration.shared().setAnalyticsCollectionEnabled(enableAnalytics)
+        
+        Crashlytics.sharedInstance().delegate = self
+        
+        // Print out settings
+        if UserDefaults.standard.bool(forKey: Constants.AnalyticsEnabled)
+        {
+            print("analytics enabled")
+        } else {
+            print("analytics disabled")
+        }
+        if UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
+        {
+            print("crashlytics enabled")
+        } else {
+            print("crashlytics disabled")
+        }
+        
+        return true
+    }
+    
+    // for METHOD B:
+    
+    func crashlyticsDidDetectReport_B(forLastExecution report: CLSReport, completionHandler: @escaping (Bool) -> Void)
+    {
+        let shouldSendCrashReport = UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
+        completionHandler(shouldSendCrashReport)
+    }
+ */
+
+    // METHOD C - crashes on startup in call to Fabric.with
+    /*
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        
+        setDefaultsFromSettingsBundle()
+        
+        // Print out settings
+        if UserDefaults.standard.bool(forKey: Constants.AnalyticsEnabled)
+        {
+            print("analytics enabled")
+        } else {
+            print("analytics disabled")
+        }
+        if UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
+        {
+            print("crashlytics enabled")
+        } else {
+            print("crashlytics disabled")
+        }
+
+        
+        // NO Firebase Analytics
+ 
+        // Initialize Crashlytics
+        if UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
+        {
+            Fabric.with([Crashlytics.self])
+        }
+        
+        
+        return true
+    }
+ */
+
+   // Method E: turn on Crashlytics + Analytics together - WORKS
+    
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        
+        setDefaultsFromSettingsBundle()
+        
+        // Print out settings
+        if UserDefaults.standard.bool(forKey: Constants.AnalyticsEnabled)
+        {
+            print("analytics enabled")
+        } else {
+            print("analytics disabled")
+        }
+        if UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
+        {
+            print("crashlytics enabled")
+        } else {
+            print("crashlytics disabled")
+        }
+        
+        
+        // Switch for Analytics + Crashlytics together
+
+        if UserDefaults.standard.bool(forKey: Constants.CrashlyticsEnabled)
+        {
+            FirebaseApp.configure()
+            AnalyticsConfiguration.shared().setAnalyticsCollectionEnabled(true)
+            Fabric.with([Crashlytics.self])
+        }
+        
+        return true
+    }
+ 
+
     
     func setDefaultsFromSettingsBundle() {
         //Read PreferenceSpecifiers from Root.plist in Settings.Bundle
